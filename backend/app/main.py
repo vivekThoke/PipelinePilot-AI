@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from app.api.health import router as db_health_router
 
 app = FastAPI(
     title="PipelinePilot AI",
@@ -11,3 +11,5 @@ app = FastAPI(
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+app.include_router(db_health_router)
