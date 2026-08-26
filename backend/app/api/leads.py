@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models import Lead
 from app.schemas.lead import LeadResponse, LeadUpdate
+from app.services.crm.service import CRMService
 
 
 router = APIRouter(
@@ -19,14 +20,12 @@ router = APIRouter(
 )
 async def list_leads(
     db: AsyncSession = Depends(get_db),
-) -> list[Lead]:
+) -> list[LeadResponse]:
     """Return all CRM leads."""
 
-    result = await db.execute(
-        select(Lead).order_by(Lead.created_at.desc())
-    )
-
-    return list(result.scalars().all())
+    crm_service = CRMService(db)
+    
+    return await crm_service.list_leads()
 
 
 @router.get(
@@ -36,17 +35,19 @@ async def list_leads(
 async def get_lead(
     lead_id: int,
     db: AsyncSession = Depends(get_db),
-) -> Lead:
+) -> LeadResponse:
     """Return a single CRM lead."""
-
-    lead = await db.get(Lead, lead_id)
-
+    
+    crm_service = CRMService(db)
+    
+    lead = await crm_service.get_lead(lead_id)
+    
     if lead is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lead not found",
         )
-
+        
     return lead
 
 
@@ -61,22 +62,17 @@ async def update_lead(
 ) -> Lead:
     """Update allowed lead fields."""
 
-    lead = await db.get(Lead, lead_id)
-
+    crm_service = CRMService(db)
+    
+    lead = await crm_service.update_lead(
+        lead_id=lead_id,
+        lead_update=lead_update
+    )
+    
     if lead is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lead not found",
         )
-
-    update_data = lead_update.model_dump(
-        exclude_unset=True
-    )
-
-    for field, value in update_data.items():
-        setattr(lead, field, value)
-
-    await db.commit()
-    await db.refresh(lead)
-
+        
     return lead

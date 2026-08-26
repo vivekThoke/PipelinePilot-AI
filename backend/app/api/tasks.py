@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models import CRMTask, Lead
 from app.schemas.task import CreateTask, TaskResponse
+from app.services.crm.service import CRMService
 
 
 router = APIRouter(
@@ -19,7 +20,7 @@ router = APIRouter(
 )
 async def list_tasks(
     db: AsyncSession = Depends(get_db),
-) -> list[CRMTask]:
+) -> list[TaskResponse]:
     """Return all CRM tasks."""
 
     result = await db.execute(
@@ -39,27 +40,19 @@ async def list_tasks(
 async def create_task(
     task_data: CreateTask,
     db: AsyncSession = Depends(get_db),
-) -> CRMTask:
+) -> TaskResponse:
     """Create a task for a lead."""
 
-    lead = await db.get(
-        Lead,
-        task_data.lead_id,
+    crm_serivce = CRMService(db)
+    
+    task = await crm_serivce.create_task(
+        task_data
     )
-
-    if lead is None:
+    
+    if task is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Lead not found",
         )
-
-    task = CRMTask(
-        **task_data.model_dump(),
-    )
-
-    db.add(task)
-
-    await db.commit()
-    await db.refresh(task)
-
+        
     return task
