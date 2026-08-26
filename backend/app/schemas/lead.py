@@ -20,7 +20,7 @@ class LeadResponse(BaseModel):
     name: str
     email: EmailStr | None
     job_title: str | None
-    status: str
+    status: LeadStatus
     source: str | None
     notes: str | None
     created_at: datetime

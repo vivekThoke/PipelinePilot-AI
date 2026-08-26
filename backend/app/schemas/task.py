@@ -1,14 +1,22 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+TaskPriority = Literal[
+    "low",
+    "high",
+    "normal"
+]
+
+
 class CreateTask(BaseModel):
-    """Request to create CRM task."""
+    """Request to create CRM task."""   
     
     lead_id: int
     title: str
     description: str | None = None  
-    priority: str = "noraml"
+    priority: TaskPriority = "noraml"
     due_at: datetime | None = None
     
 class TaskResponse(BaseModel):
@@ -18,7 +26,7 @@ class TaskResponse(BaseModel):
     lead_id: int
     title: str
     description: str | None
-    priority: str
+    priority: TaskPriority
     status: str
     due_at: datetime | None
     created_at: datetime
