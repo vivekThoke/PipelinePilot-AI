@@ -1,6 +1,16 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr
+
+LeadStatus = Literal[
+    "new",
+    "contacted",
+    "qualified",
+    "unqualified",
+    "converted",
+]
+
 
 class LeadResponse(BaseModel):
     """Lead returned by the CMR API."""
@@ -22,5 +32,5 @@ class LeadResponse(BaseModel):
 class LeadUpdate(BaseModel):
     """Feilds that can be updated for a lead"""
     
-    status: str | None
+    status: LeadStatus | None
     notes: str | None
