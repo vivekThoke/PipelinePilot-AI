@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.models import Lead
 from app.schemas.lead import LeadResponse, LeadUpdate
 from app.services.crm.service import CRMService
+from app.api.dependencies import get_crm_service
 
 
 router = APIRouter(
@@ -19,11 +20,9 @@ router = APIRouter(
     response_model=list[LeadResponse],
 )
 async def list_leads(
-    db: AsyncSession = Depends(get_db),
+    crm_service: CRMService = Depends(get_crm_service)
 ) -> list[LeadResponse]:
     """Return all CRM leads."""
-
-    crm_service = CRMService(db)
     
     return await crm_service.list_leads()
 
@@ -34,11 +33,9 @@ async def list_leads(
 )
 async def get_lead(
     lead_id: int,
-    db: AsyncSession = Depends(get_db),
+    crm_service: CRMService = Depends(get_crm_service)
 ) -> LeadResponse:
     """Return a single CRM lead."""
-    
-    crm_service = CRMService(db)
     
     lead = await crm_service.get_lead(lead_id)
     
@@ -58,12 +55,10 @@ async def get_lead(
 async def update_lead(
     lead_id: int,
     lead_update: LeadUpdate,
-    db: AsyncSession = Depends(get_db),
+    crm_service: CRMService = Depends(get_crm_service)
 ) -> Lead:
     """Update allowed lead fields."""
 
-    crm_service = CRMService(db)
-    
     lead = await crm_service.update_lead(
         lead_id=lead_id,
         lead_update=lead_update
