@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.models import CRMTask, Lead
 from app.schemas.task import CreateTask, TaskResponse
 from app.services.crm.service import CRMService
+from app.api.dependencies import get_crm_service
 
 
 router = APIRouter(
@@ -39,13 +40,11 @@ async def list_tasks(
 )
 async def create_task(
     task_data: CreateTask,
-    db: AsyncSession = Depends(get_db),
+    crm_service: CRMService = Depends(get_crm_service)
 ) -> TaskResponse:
     """Create a task for a lead."""
-
-    crm_serivce = CRMService(db)
     
-    task = await crm_serivce.create_task(
+    task = await crm_service.create_task(
         task_data
     )
     
