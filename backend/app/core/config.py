@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     database_url: str
     gemini_api_key: str
-    gemini_api_model: str = "gemini-2.5-flash-lite"
+    gemini_api_model: str = "gemini-5-flash-lite"
 
     model_config = SettingsConfigDict(
         env_file=".env",
