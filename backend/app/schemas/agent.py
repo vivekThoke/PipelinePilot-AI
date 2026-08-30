@@ -39,3 +39,10 @@ class LeadAnalysis(BaseModel):
     task_title: str | None = None
     
     task_description: str | None = None
+    
+    
+class LeadAnalysisResponse(BaseModel):
+    """API response for lead anlysis"""
+    
+    lead_id: int
+    analysis: LeadAnalysis
