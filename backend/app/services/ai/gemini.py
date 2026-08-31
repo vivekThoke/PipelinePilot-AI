@@ -7,7 +7,7 @@ from app.schemas.agent import LeadAnalysis
 class GeminiService:
     """Service responsible for Gemini AI interactions."""
     
-    def __int__(self) -> None:
+    def __init__(self) -> None:
         settings = get_settings()
         
         self.model = settings.gemini_api_model
@@ -49,8 +49,8 @@ class GeminiService:
         
         response = self.client.models.generate_content(
             model=self.model,
-            content=prompt,
-            config=type.GenerateContentConfig(
+            contents=prompt,
+            config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=LeadAnalysis
             )
