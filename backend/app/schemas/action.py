@@ -4,7 +4,8 @@ from pydantic import BaseModel, Field
 
 ActionType = Literal[
     "create_follow_up_task",
-    "update_lead_status"
+    "update_lead_status",
+    "no_action"
 ]
 
 class AgentAction(BaseModel):
