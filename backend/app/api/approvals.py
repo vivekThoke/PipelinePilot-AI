@@ -29,3 +29,17 @@ async def get_approval(
     db: AsyncSession = Depends(get_db),
 ) -> ApprovalResponse:
     """Get approval request"""
+    
+    service = ApprovalService(db)
+    
+    approval = await service.get_request(
+        approval_id=approval_id
+    )
+    
+    if approval is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Approval request not found"
+        )
+        
+    return approval
