@@ -1,0 +1,31 @@
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status
+)
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.dependencies import get_crm_service
+from app.core.database import get_db
+from app.models import AuditLog
+from app.schemas.approval import ApprovalResponse
+from app.services.agent.approval import ApprovalService
+from app.services.agent.executor import AgentActionExecutor
+from app.services.crm.service import CRMService
+from app.tools.crm_tools import CRMTools
+
+router = APIRouter(
+    prefix="/api/v1/approvals",
+    tags=["approvals"]
+)
+
+@router.get(
+    "/{approval_id}",
+    response_model=ApprovalResponse,
+)
+async def get_approval(
+    approval_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> ApprovalResponse:
+    """Get approval request"""
