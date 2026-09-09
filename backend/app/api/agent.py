@@ -84,7 +84,7 @@ async def propose_action(
         ai_service=ai_service,
     )
 
-    proposal = await agent.propose_action(
+    proposal = await agent.propse_action(
         lead_id
     )
 
