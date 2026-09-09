@@ -46,76 +46,125 @@ async def get_approval(
 
 @router.post(
     "/{approval_id}/approve",
-    response_model=ApprovalResponse
+    response_model=ApprovalResponse,
 )
-async def approve_section(
+async def approve_action(
     approval_id: int,
     db: AsyncSession = Depends(get_db),
     crm_service: CRMService = Depends(
         get_crm_service
     ),
 ) -> ApprovalResponse:
-    "Approve and execute an agent action."
-    
+    """Approve and execute an agent action."""
+
     service = ApprovalService(db)
-    
+
     approval = await service.get_request(
         approval_id
     )
-    
+
     if approval is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Approval request not found"
+            detail="Approval request not found",
         )
-        
+
     if approval.status != "pending":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
-                "Approval request already resolved"
-            )
+                "Approval request is already resolved"
+            ),
         )
-        
+
     action = service.deserialize_action(
         approval
     )
-    
+
     crm_tools = CRMTools(
         crm_service
     )
-    
+
     executor = AgentActionExecutor(
         crm_tools
     )
-    
+
     result = await executor.execute(
         action
     )
-    
+
     if not result["success"]:
         approval.status = "failed"
-        
+
         await db.commit()
-        
+
         raise HTTPException(
-            status=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(result),
         )
-        
+
     await service.mark_approved(
         approval
     )
-    
+
     audit = AuditLog(
         action_type=action.action_type,
         lead_id=action.lead_id,
         status="success",
-        details=str(result)
+        details=str(result),
     )
-    
+
     db.add(audit)
-    
+
     await db.commit()
-    
+
+    return approval
+
+
+
+@router.post(
+    "/{approval_id}/reject",
+    response_model=ApprovalResponse,
+)
+async def reject_action(
+    approval_id: int,
+    db: AsyncSession = Depends(get_db),
+) -> ApprovalResponse:
+    """Reject a pending agent action."""
+
+    service = ApprovalService(db)
+
+    approval = await service.get_request(
+        approval_id
+    )
+
+    if approval is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Approval request not found",
+        )
+
+    if approval.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Approval request is already resolved"
+            ),
+        )
+
+    await service.mark_rejected(
+        approval
+    )
+
+    audit = AuditLog(
+        action_type=approval.action_type,
+        lead_id=approval.lead_id,
+        status="rejected",
+        details=approval.reason,
+    )
+
+    db.add(audit)
+
+    await db.commit()
+
     return approval
