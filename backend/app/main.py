@@ -3,6 +3,9 @@ from app.api.health import router as db_health_router
 from app.api.leads import router as leads_router
 from app.api.tasks import router as tasks_router
 from app.api.agent import router as agent_router
+from app.api.approvals import (
+    router as approval_router
+)
 
 app = FastAPI(
     title="PipelinePilot AI",
@@ -19,3 +22,4 @@ app.include_router(db_health_router)
 app.include_router(leads_router)
 app.include_router(tasks_router)
 app.include_router(agent_router)
+app.include_router(approval_router)
